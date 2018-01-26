@@ -1,8 +1,12 @@
 import os
+import sys
+from urllib.parse import urlparse
+
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
-from MangaCrawler.spiders.hocvientruyentranh import HocvientruyentranhSpider
+
 from MangaCrawler.spiders.hentailx import HentailxSpider
+from MangaCrawler.spiders.hocvientruyentranh import HocvientruyentranhSpider
 
 
 class Crawler:
@@ -15,10 +19,16 @@ class Crawler:
     def start(self, url, output_directory, chapter):
         crawler = None
 
-        if "hocvientruyentranh.com" in url:
+        parsed_uri = urlparse(url)
+        domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
+
+        if "hocvientruyentranh.com" in domain:
             crawler = HocvientruyentranhSpider
-        else:
+        elif "hentailx.com" in domain:
             crawler = HentailxSpider
+        else:
+            print('This domain do not support!')
+            sys.exit()
 
         self.process.crawl(crawler, url=url, output_directory=output_directory, chapter=chapter)
         self.process.start()  # the script will block here until all crawling jobs are finished

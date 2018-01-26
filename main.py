@@ -1,4 +1,7 @@
-import sys, os, getopt
+import getopt
+import os
+import sys
+
 from MangaCrawler.crawler import Crawler
 
 

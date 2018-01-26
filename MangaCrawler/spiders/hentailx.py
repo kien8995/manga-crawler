@@ -34,13 +34,16 @@ class HentailxSpider(scrapy.Spider):
             yield self.chapter_titles.append(title)
 
         # Follow pagination link
-        has_next_page_icon = response.css("div#list-chap > div.item_chap > nav.pagerhamtruyen > ul.pagination > li > a > span.glyphicon").extract_first()
+        has_next_page_icon = response.css(
+            "div#list-chap > div.item_chap > nav.pagerhamtruyen > ul.pagination > li > a > span.glyphicon").extract_first()
         if has_next_page_icon:
-            next_page_url = response.css("div#list-chap > div.item_chap > nav.pagerhamtruyen > ul.pagination > li:last-child > a::attr(href)").extract_first()
+            next_page_url = response.css(
+                "div#list-chap > div.item_chap > nav.pagerhamtruyen > ul.pagination > li:last-child > a::attr(href)").extract_first()
             next_page_url = response.urljoin(next_page_url)
             yield scrapy.Request(url=next_page_url, callback=self.parse)
         else:
-            next_page_url = response.css("div#list-chap > div.item_chap > nav.pagerhamtruyen > ul.pagination > li.active + li > a::attr(href)").extract_first()
+            next_page_url = response.css(
+                "div#list-chap > div.item_chap > nav.pagerhamtruyen > ul.pagination > li.active + li > a::attr(href)").extract_first()
             if next_page_url:
                 next_page_url = response.urljoin(next_page_url)
                 yield scrapy.Request(url=next_page_url, callback=self.parse)
@@ -50,7 +53,7 @@ class HentailxSpider(scrapy.Spider):
                 chapters = self.chapter.split("-")
                 chapter_begin, chapter_end = self.get_chapter_index(chapters[0], chapters[1], self.chapter_titles)
                 self.chapter_urls = self.chapter_urls[chapter_begin:] if chapter_end == -1 else self.chapter_urls[
-                                                                                      chapter_begin:chapter_end]
+                                                                                                chapter_begin:chapter_end]
             else:
                 chapter_index = self.get_chapter_index(self.chapter, self.chapter, self.chapter_titles)
                 self.chapter_urls = [self.chapter_urls[chapter_index[0]]]
@@ -64,10 +67,11 @@ class HentailxSpider(scrapy.Spider):
             yield scrapy.Request(url=chapter_url, callback=self.parse_details)
 
     def parse_details(self, response):
-        file_name = response.css("div#chapter-detail li.reading-chapter > a::text").extract_first()
+        file_name = response.css(
+            "div#chapter-detail > div > ol.breadcrumb > li:nth-child(2) > a::text").extract_first() \
+                    + " - " + response.css(
+            "div#chapter-detail > div > ol.breadcrumb > li.reading-chapter > a::text").extract_first()
         file_name = re.sub(">|<|:|\"|/|\|||\?|\*", "", file_name).strip() + ".pdf"
-
-        print(file_name)
 
         html_string = response.css("div#content_chap").extract_first()
         css = CSS(string='''
