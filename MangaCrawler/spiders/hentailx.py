@@ -34,7 +34,7 @@ class HentailxSpider(scrapy.Spider):
             yield self.chapter_titles.append(title)
 
         # Follow pagination link
-        has_next_page_icon = response.css("div#list-chap > div.item_chap > nav.pagerhamtruyen > ul.pagination > li > a > span").extract_first()
+        has_next_page_icon = response.css("div#list-chap > div.item_chap > nav.pagerhamtruyen > ul.pagination > li > a > span.glyphicon").extract_first()
         if has_next_page_icon:
             next_page_url = response.css("div#list-chap > div.item_chap > nav.pagerhamtruyen > ul.pagination > li:last-child > a::attr(href)").extract_first()
             next_page_url = response.urljoin(next_page_url)
