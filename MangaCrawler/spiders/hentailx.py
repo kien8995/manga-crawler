@@ -28,22 +28,32 @@ class HentailxSpider(scrapy.Spider):
         titles = response.css("div#list-chap > div.item_chap > a::text")[::-1].extract()
 
         for url in urls:
-            self.chapter_urls.append(response.urljoin(url))
+            yield self.chapter_urls.append(response.urljoin(url))
 
         for title in titles:
-            self.chapter_titles.append(title)
+            yield self.chapter_titles.append(title)
 
         # Follow pagination link
+        has_next_page_icon = response.css("div#list-chap > div.item_chap > nav.pagerhamtruyen > ul.pagination > li > a > span").extract_first()
+        if has_next_page_icon:
+            next_page_url = response.css("div#list-chap > div.item_chap > nav.pagerhamtruyen > ul.pagination > li:last-child > a::attr(href)").extract_first()
+            next_page_url = response.urljoin(next_page_url)
+            yield scrapy.Request(url=next_page_url, callback=self.parse)
+        else:
+            next_page_url = response.css("div#list-chap > div.item_chap > nav.pagerhamtruyen > ul.pagination > li.active + li > a::attr(href)").extract_first()
+            if next_page_url:
+                next_page_url = response.urljoin(next_page_url)
+                yield scrapy.Request(url=next_page_url, callback=self.parse)
 
         if self.chapter:
             if "-" in self.chapter:
                 chapters = self.chapter.split("-")
                 chapter_begin, chapter_end = self.get_chapter_index(chapters[0], chapters[1], self.chapter_titles)
-                chapter_urls = self.chapter_urls[chapter_begin:] if chapter_end == -1 else self.chapter_urls[
+                self.chapter_urls = self.chapter_urls[chapter_begin:] if chapter_end == -1 else self.chapter_urls[
                                                                                       chapter_begin:chapter_end]
             else:
                 chapter_index = self.get_chapter_index(self.chapter, self.chapter, self.chapter_titles)
-                chapter_urls = [self.chapter_urls[chapter_index[0]]]
+                self.chapter_urls = [self.chapter_urls[chapter_index[0]]]
 
         print("{0} chapter(s) was founded!".format(len(self.chapter_urls)))
 
