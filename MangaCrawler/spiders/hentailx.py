@@ -81,8 +81,9 @@ class HentailxSpider(scrapy.Spider):
             }
 
             img {
-                height: 100%;
-                width: 100%;
+                display: block;
+                width: auto;
+                height: auto;
                 max-height: 1060px;
                 max-width: 800px;
             }

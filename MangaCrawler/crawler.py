@@ -5,8 +5,9 @@ from urllib.parse import urlparse
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 
-from MangaCrawler.spiders.hentailx import HentailxSpider
 from MangaCrawler.spiders.hocvientruyentranh import HocvientruyentranhSpider
+from MangaCrawler.spiders.mangak import MangakSpider
+from MangaCrawler.spiders.hentailx import HentailxSpider
 
 
 class Crawler:
@@ -24,6 +25,8 @@ class Crawler:
 
         if "hocvientruyentranh.com" in domain:
             crawler = HocvientruyentranhSpider
+        elif "mangak.info" in domain:
+            crawler = MangakSpider
         elif "hentailx.com" in domain:
             crawler = HentailxSpider
         else:

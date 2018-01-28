@@ -5,9 +5,9 @@ from weasyprint import HTML, CSS
 import re
 
 
-class HocvientruyentranhSpider(scrapy.Spider):
-    name = 'hocvientruyentranh'
-    allowed_domains = ['hocvientruyentranh.com']
+class MangakSpider(scrapy.Spider):
+    name = 'mangak'
+    allowed_domains = ['mangak.info']
     start_urls = []
 
     def __init__(self, url, output_directory, chapter, **kwargs):
@@ -22,8 +22,8 @@ class HocvientruyentranhSpider(scrapy.Spider):
             yield self.make_requests_from_url(url)
 
     def parse(self, response):
-        chapter_urls = response.css("div.table-scroll > table > tbody > tr > td > a::attr(href)")[::-1].extract()
-        chapter_titles = response.css("div.table-scroll > table > tbody > tr > td > a::attr(title)")[::-1].extract()
+        chapter_urls = response.css("div.chapter-list > div.row > span > a::attr(href)")[::-1].extract()
+        chapter_titles = response.css("div.chapter-list > div.row > span > a::attr(title)")[::-1].extract()
 
         if self.chapter:
             if "-" in self.chapter:
@@ -44,10 +44,10 @@ class HocvientruyentranhSpider(scrapy.Spider):
             yield scrapy.Request(url=chapter_url, callback=self.parse_details)
 
     def parse_details(self, response):
-        file_name = response.css("title::text").extract_first()
-        file_name = re.sub(">|<|:|\"|/|\|||\?|\*", "", file_name).replace("Học Viện Truyện Tranh", "").strip() + ".pdf"
+        file_name = response.css("div.wrap-body > div.hentry > h1.name_chapter::text").extract_first()
+        file_name = re.sub(">|<|:|\"|/|\|||\?|\*", "", file_name).strip() + ".pdf"
 
-        html_string = response.css("div.manga-container").extract_first()
+        html_string = response.css("div.vung_doc").extract_first()
         css = CSS(string='''
             @page {
                 size: Letter;
