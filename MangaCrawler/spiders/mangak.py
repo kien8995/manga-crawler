@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import scrapy
-from weasyprint import HTML, CSS
+from weasyprint import HTML
 import re
 
 
@@ -48,22 +48,11 @@ class MangakSpider(scrapy.Spider):
         file_name = re.sub(">|<|:|\"|/|\|||\?|\*", "", file_name).strip() + ".pdf"
 
         html_string = response.css("div.vung_doc").extract_first()
-        css = CSS(string='''
-            @page {
-                size: Letter;
-                margin: 0in 0in 0in 0in;
-            }
 
-            img {
-                display: block;
-                width: auto;
-                height: auto;
-                max-height: 1060px;
-                max-width: 800px;
-            }
-        ''')
         html = HTML(string=html_string)
-        html.write_pdf(os.path.join(self.output_directory, file_name), stylesheets=[css])
+        html.write_pdf(os.path.join(self.output_directory, file_name),
+                       stylesheets=["MangaCrawler/assets/styles/page.css"])
+
         print("{0} .Done.".format(file_name))
 
     def get_chapter_index(self, chapter_begin, chapter_end, chapter_titles):
