@@ -5,6 +5,7 @@
 
 img {
     display: block;
+    margin: 0 auto;
     width: auto;
     height: auto;
     max-height: 1060px;
