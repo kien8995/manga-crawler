@@ -3,6 +3,7 @@ import os
 import scrapy
 from weasyprint import HTML
 import re
+import requests
 
 
 class HocvientruyentranhSpider(scrapy.Spider):
@@ -10,12 +11,13 @@ class HocvientruyentranhSpider(scrapy.Spider):
     allowed_domains = ['hocvientruyentranh.com']
     start_urls = []
 
-    def __init__(self, url, output_directory, chapter, **kwargs):
+    def __init__(self, url, output_directory, chapter, image, **kwargs):
         super().__init__(**kwargs)
 
         self.start_urls.append(url)
         self.output_directory = output_directory
         self.chapter = chapter.lower()
+        self.image = image
 
     def start_requests(self):
         for url in self.start_urls:
@@ -44,16 +46,30 @@ class HocvientruyentranhSpider(scrapy.Spider):
             yield scrapy.Request(url=chapter_url, callback=self.parse_details)
 
     def parse_details(self, response):
-        file_name = response.css("title::text").extract_first()
-        file_name = re.sub(">|<|:|\"|/|\|||\?|\*", "", file_name).replace("Học Viện Truyện Tranh", "").strip() + ".pdf"
+        if self.image:
+            folder_name = response.css("title::text").extract_first()
+            folder_name = re.sub(">|<|:|\"|/|\|||\?|\*", "", folder_name).replace("Học Viện Truyện Tranh","").strip()
 
-        html_string = response.css("div.manga-container").extract_first()
+            image_urls = response.css("div.manga-container > img::attr(src)").extract()
 
-        html = HTML(string=html_string)
-        html.write_pdf(os.path.join(self.output_directory, file_name),
-                       stylesheets=["MangaCrawler/assets/styles/page.css"])
+            if not os.path.exists(self.output_directory + "/" + folder_name):
+                os.makedirs(self.output_directory + "/" + folder_name)
 
-        print("{0} .Done.".format(file_name))
+            for index, url in enumerate(image_urls):
+                self.download_image(url, self.output_directory + "/" + folder_name + "/" + str(index) + ".jpg")
+
+            print("{0} .Done.".format(folder_name))
+        else:
+            file_name = response.css("title::text").extract_first()
+            file_name = re.sub(">|<|:|\"|/|\|||\?|\*", "", file_name).replace("Học Viện Truyện Tranh", "").strip() + ".pdf"
+
+            html_string = response.css("div.manga-container").extract_first()
+
+            html = HTML(string=html_string)
+            html.write_pdf(os.path.join(self.output_directory, file_name),
+                           stylesheets=["MangaCrawler/assets/styles/page.css"])
+            print("{0} .Done.".format(file_name))
+
 
     def get_chapter_index(self, chapter_begin, chapter_end, chapter_titles):
         start, end = 0, -1
@@ -76,3 +92,12 @@ class HocvientruyentranhSpider(scrapy.Spider):
                     break
 
         return start, end
+
+    def download_image(self, url, filename=None):
+        if filename is None:
+            local_filename = url.split('/')[-1].split("?")[0]
+        else:
+            local_filename = filename
+
+        r = requests.get(url, allow_redirects=True)
+        open(local_filename, 'wb').write(r.content)

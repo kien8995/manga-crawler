@@ -17,7 +17,7 @@ class Crawler:
         os.environ.setdefault('SCRAPY_SETTINGS_MODULE', self.settings_file_path)
         self.process = CrawlerProcess(get_project_settings())
 
-    def start(self, url, output_directory, chapter):
+    def start(self, url, output_directory, chapter, image):
         crawler = None
 
         parsed_uri = urlparse(url)
@@ -33,5 +33,5 @@ class Crawler:
             print('This domain do not support!')
             sys.exit()
 
-        self.process.crawl(crawler, url=url, output_directory=output_directory, chapter=chapter)
+        self.process.crawl(crawler, url=url, output_directory=output_directory, chapter=chapter, image=image)
         self.process.start()  # the script will block here until all crawling jobs are finished
